@@ -1,0 +1,28 @@
+name: Dashboard checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install locked dependencies
+        run: npm exec --yes --package=pnpm@11.25.0 -- pnpm install --frozen-lockfile
+      - name: Test reports and Google integration
+        run: npm test
+      - name: Check types
+        run: npm run typecheck
+      - name: Build dashboard
+        run: npm run build

@@ -1,0 +1,67 @@
+@font-face{font-family:uicons;src:url(/icons/uicons.woff2) format("woff2");font-display:block}.fi{font-family:uicons!important;font-style:normal;font-weight:normal!important;display:inline-flex;line-height:1;align-items:center;justify-content:center;-webkit-font-smoothing:antialiased}
+.fi-rr-angle-down:before {
+    content: "\e08d";
+    }
+.fi-rr-apps:before {
+    content: "\e0b3";
+    }
+.fi-rr-arrow-down:before {
+    content: "\e0d8";
+    }
+.fi-rr-arrow-right:before {
+    content: "\e0ec";
+    }
+.fi-rr-arrow-up:before {
+    content: "\e102";
+    }
+.fi-rr-browser:before {
+    content: "\e2c0";
+    }
+.fi-rr-building:before {
+    content: "\e2d5";
+    }
+.fi-rr-calendar:before {
+    content: "\e30c";
+    }
+.fi-rr-chart-histogram:before {
+    content: "\e3b5";
+    }
+.fi-rr-chart-line-up:before {
+    content: "\e3b7";
+    }
+.fi-rr-cloud-upload-alt:before {
+    content: "\e4b4";
+    }
+.fi-rr-cross-small:before {
+    content: "\e579";
+    }
+.fi-rr-cursor:before {
+    content: "\e596";
+    }
+.fi-rr-document:before {
+    content: "\e654";
+    }
+.fi-rr-file-csv:before {
+    content: "\e7a9";
+    }
+.fi-rr-folder-upload:before {
+    content: "\e84e";
+    }
+.fi-rr-info:before {
+    content: "\ea4f";
+    }
+.fi-rr-minus:before {
+    content: "\ec3e";
+    }
+.fi-rr-print:before {
+    content: "\eebf";
+    }
+.fi-rr-search:before {
+    content: "\f015";
+    }
+.fi-rr-bed:before {
+    content: "\e1b3";
+    }
+.fi-rr-dice:before {
+    content: "\e60b";
+    }
