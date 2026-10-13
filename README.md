@@ -4,7 +4,7 @@ A website performance dashboard for the Tsogo Sun portfolio, now prepared to run
 
 Repository: https://github.com/Roli-Matsabe/Data-Performance
 
-This version no longer relies on ChatGPT identity headers or Cloudflare D1. A production Firebase project has **not yet been connected or deployed**. The previous ChatGPT website is a separate deployment and is not updated by these changes. Follow [Firebase deployment](docs/deployment.md) to connect the real project.
+This version no longer relies on ChatGPT identity headers or Cloudflare D1. The deployment configuration targets Firebase project `website-analytics-dashbo-15be5`, Firestore database `(default)`, and permits only the verified account `rolihlahla.info@gmail.com`. The public Web app configuration is included in `apphosting.yaml`. **Production access and deployment have not yet been verified.** The previous ChatGPT website is a separate deployment and is not updated by these changes. Follow [Firebase deployment](docs/deployment.md) to publish the standalone app.
 
 ## Development
 

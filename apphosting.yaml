@@ -1,5 +1,6 @@
 # Firebase App Hosting builds this Next.js app from the connected GitHub branch.
-# Set project-specific values and the encryption secret in App Hosting settings.
+# Public Firebase Web app identifiers are safe to include here.
+# Add SITE_ORIGIN after creating the backend and bind the optional GA4 secret.
 runConfig:
   minInstances: 0
   maxInstances: 2
@@ -13,9 +14,18 @@ env:
   - variable: FIREBASE_AUTH_DOMAIN
     value: "website-analytics-dashbo-15be5.firebaseapp.com"
     availability: [RUNTIME]
+  - variable: FIREBASE_WEB_API_KEY
+    value: "AIzaSyDKnv9xAvJkdMk82vvDZkigV8ObPhDqUQE"
+    availability: [RUNTIME]
+  - variable: FIREBASE_WEB_APP_ID
+    value: "1:715695907941:web:aacfadc3f97554e309528c"
+    availability: [RUNTIME]
   - variable: FIRESTORE_DATABASE_ID
     value: "(default)"
     availability: [RUNTIME]
   - variable: ACCESS_POLICY
     value: "allowlist"
+    availability: [RUNTIME]
+  - variable: ALLOWED_EMAILS
+    value: "rolihlahla.info@gmail.com"
     availability: [RUNTIME]

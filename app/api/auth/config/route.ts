@@ -10,6 +10,7 @@ export async function GET() {
     return Response.json({
       apiKey: apiKey || 'demo-key', projectId,
       authDomain: process.env.FIREBASE_AUTH_DOMAIN || `${projectId}.firebaseapp.com`,
+      ...(process.env.FIREBASE_WEB_APP_ID ? { appId: process.env.FIREBASE_WEB_APP_ID } : {}),
       ...(emulator && projectId.startsWith('demo-') ? { emulatorUrl: `http://${emulator}` } : {}),
     }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (error) { return errorResponse(error); }

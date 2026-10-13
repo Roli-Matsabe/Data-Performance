@@ -4,29 +4,30 @@ The source is in `Roli-Matsabe/Data-Performance`. This version is a standalone N
 
 ## Required project details
 
-The configured Firebase project is `website-analytics-dashbo-15be5`, using database `(default)`. Confirm the database region and the email addresses permitted to sign in. The Web app configuration and deployment access are still required. Existing cloud-workspace credentials could not authenticate to Firebase during preparation.
+The configured Firebase project is `website-analytics-dashbo-15be5`, using database `(default)`. The supplied public Web app configuration is saved in `apphosting.yaml`, and the approved sign-in account is `rolihlahla.info@gmail.com`. Confirm the database region when choosing the hosting region. Deployment access is still required: existing cloud-workspace credentials could not authenticate to Firebase during preparation.
 
 ## 1. Prepare Firebase services
 
 1. Select the intended company project in Firebase Console. Confirm Firestore is a **Standard, native-mode** database.
 2. Open **Authentication → Sign-in method** and enable **Google**, choosing the appropriate support email.
-3. In **Project settings → General**, register a Web app if none exists. Record its `apiKey`, `authDomain`, and `projectId`. Registering an app does not grant database access.
+3. The existing Web app (`1:715695907941:web:aacfadc3f97554e309528c`) is configured already. Its public identifiers do not grant administrative or database access.
 4. Use Firebase **App Hosting** for this full-stack Next.js application. App Hosting requires a billing-enabled Blaze project. The included configuration sets a zero minimum and a two-instance maximum; the maximum is not a spending cap. Configure billing alerts as appropriate.
-5. Connect the Firebase App Hosting GitHub integration to this repository. Create a backend with repository root `/`, branch `main`, and a supported region near the database. Do not replace another application's backend or database.
+5. Open [Firebase App Hosting for this project](https://console.firebase.google.com/project/website-analytics-dashbo-15be5/apphosting) and connect the GitHub integration to `Roli-Matsabe/Data-Performance`. Create a backend with repository root `/`, branch `main`, and a supported region near the database. Do not replace another application's backend or database.
 
 ## 2. Configure the backend
 
-Use the backend's environment configuration and Secret Manager bindings. The checked-in `apphosting.yaml` contains the non-project-specific runtime defaults. If your setup uses YAML for project-specific configuration, add the non-secret values there and a Secret Manager reference for the encryption key before rollout.
+The checked-in `apphosting.yaml` already includes the project, database, public Web app identifiers, and approved email. After creating the backend, add its assigned HTTPS origin as `SITE_ORIGIN` in that file and roll out the commit. Use Secret Manager for the optional Google Analytics encryption key.
 
 | Variable | Value |
 | --- | --- |
-| `FIREBASE_PROJECT_ID` | The actual Firebase project ID |
-| `FIRESTORE_DATABASE_ID` | `(default)` or the existing database ID |
-| `FIREBASE_WEB_API_KEY` | The Web app's public Firebase API key |
-| `FIREBASE_AUTH_DOMAIN` | The Web app's auth domain, normally `PROJECT_ID.firebaseapp.com` |
+| `FIREBASE_PROJECT_ID` | `website-analytics-dashbo-15be5` (configured) |
+| `FIRESTORE_DATABASE_ID` | `(default)` (configured) |
+| `FIREBASE_WEB_API_KEY` | Supplied public Firebase API key (configured) |
+| `FIREBASE_WEB_APP_ID` | `1:715695907941:web:aacfadc3f97554e309528c` (configured) |
+| `FIREBASE_AUTH_DOMAIN` | `website-analytics-dashbo-15be5.firebaseapp.com` (configured) |
 | `SITE_ORIGIN` | The deployed HTTPS origin, without a path or trailing slash |
 | `ACCESS_POLICY` | `allowlist` by default |
-| `ALLOWED_EMAILS` | Comma-separated, approved email addresses |
+| `ALLOWED_EMAILS` | `rolihlahla.info@gmail.com` (configured) |
 | `GOOGLE_TOKEN_ENCRYPTION_KEY` | A secret containing a cryptographically random, base64/base64url-encoded 32-byte key |
 
 The encryption key is required for connecting Google Analytics, not for basic CSV reporting. Preserve it once Google credentials are saved. Changing it makes those credentials unreadable. Generate and store it through a secure administrative workflow; never paste private keys or tokens into GitHub or chat.
@@ -55,7 +56,7 @@ npm exec -- firebase deploy --only firestore:rules,firestore:indexes --project w
 2. Set `SITE_ORIGIN` to the assigned HTTPS origin and roll out updated configuration if necessary.
 3. Add the deployed hostname under **Authentication → Settings → Authorized domains**. Keep the Firebase auth domain from the Web app's configuration.
 4. Visit the deployed site and sign in with an approved, verified Google account.
-5. Import a small CSV and confirm it remains after refresh. Sign in as a second account and confirm it cannot see the first account's saved records.
+5. Import a small CSV and confirm it remains after refresh. Confirm a different, unapproved account is denied access.
 
 Keep the existing ChatGPT website available until the standalone deployment is verified. A GitHub commit or a successful local build is not proof that a live rollout succeeded.
 
