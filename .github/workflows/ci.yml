@@ -19,10 +19,16 @@ jobs:
         with:
           node-version: '24'
       - name: Install locked dependencies
-        run: npm exec --yes --package=pnpm@11.25.0 -- pnpm install --frozen-lockfile
-      - name: Test reports and Google integration
-        run: npm test
+        run: RE2_DOWNLOAD_FORCE_BUILD=1 npm exec --yes --package=pnpm@11.25.0 -- pnpm install --frozen-lockfile
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Test Firebase, reports and Google integration
+        run: npm run test:emulators
       - name: Check types
         run: npm run typecheck
+      - name: Lint
+        run: npm run lint
       - name: Build dashboard
         run: npm run build

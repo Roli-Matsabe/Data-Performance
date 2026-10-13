@@ -114,3 +114,15 @@
 
 /* Transparent property marks, without coloured logo tiles. */
 .property-logo,.property-logo.light,.property-logo.dark{background:transparent;border:0;box-shadow:none}.property-logo.dark img{filter:brightness(0) saturate(100%)}.masthead .property-logo.dark img{filter:none}
+
+/* Standalone account access */
+.signin-page{min-height:100dvh;display:grid;place-items:center;background:#f5f2ed;padding:24px;color:#1e2832}
+.signin-card{max-width:500px;width:100%;padding:48px;background:#fff;border:1px solid #e4ded5;border-radius:24px;box-shadow:0 20px 70px #19232d0a}
+.signin-card img{object-fit:contain;background:#142431;border-radius:10px;padding:12px}
+.signin-eyebrow{letter-spacing:.18em;font-size:11px;margin-top:26px;color:#8c6f36}
+.signin-card h1{font-size:32px;line-height:1.2;margin:16px 0}
+.signin-card p{line-height:1.65;margin-bottom:24px}
+.signin-card .primary{width:100%;justify-content:center;min-height:48px}
+.account-bar{display:flex;justify-content:flex-end;gap:16px;align-items:center;padding:10px 28px;background:#132633;color:#fff;font-size:12px;flex-wrap:wrap}
+.account-bar button{border:1px solid #ffffff66;padding:5px 12px;border-radius:6px;cursor:pointer}
+@media(max-width:600px){.signin-card{padding:28px}.signin-card h1{font-size:27px}.account-bar{padding:10px 16px}}

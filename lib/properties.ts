@@ -30,7 +30,7 @@ export function parentProperty(id:string){
 export function belongsToProperty(path:string,id:string){const detected=pathProperty(path);return !detected||detected===id||(propertyById(id)?.type==='Casino'&&parentProperty(detected)===id);}
 export function contentName(path:string,id?:string){
  let s=path.split('?')[0];try{if(s.startsWith('http'))s=new URL(s).pathname;}catch{}
- let p=id?propertyById(id):propertyById(pathProperty(s)||'');
+ const p=id?propertyById(id):propertyById(pathProperty(s)||'');
  if(p?.type==='Hotel'&&s.startsWith(p.path))s=s.slice(p.path.length);
  else{s=s.replace(/^\/(?:casino|hotel|hotels)\//,'');if(p){for(const slug of [p.id,p.id.replace(/^the-/,'')])if(s.startsWith(slug+'-')||s.startsWith(slug+'/')){s=s.slice(slug.length+1);break;}}}
  s=s.replace(/^\/+|\/+$/g,'');if(!s||s===p?.id)return p?`${p.name} homepage`:'Homepage';

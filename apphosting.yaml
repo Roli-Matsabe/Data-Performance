@@ -1,0 +1,21 @@
+# Firebase App Hosting builds this Next.js app from the connected GitHub branch.
+# Set project-specific values and the encryption secret in App Hosting settings.
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 40
+  cpu: 1
+  memoryMiB: 1024
+env:
+  - variable: FIREBASE_PROJECT_ID
+    value: "website-analytics-dashbo-15be5"
+    availability: [RUNTIME]
+  - variable: FIREBASE_AUTH_DOMAIN
+    value: "website-analytics-dashbo-15be5.firebaseapp.com"
+    availability: [RUNTIME]
+  - variable: FIRESTORE_DATABASE_ID
+    value: "(default)"
+    availability: [RUNTIME]
+  - variable: ACCESS_POLICY
+    value: "allowlist"
+    availability: [RUNTIME]

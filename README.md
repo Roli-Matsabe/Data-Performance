@@ -1,66 +1,45 @@
 # Tsogo Sun Performance
 
-A portfolio dashboard for website traffic, content, search performance, CSV report imports, and an optional read-only Google Analytics 4 connection.
+A website performance dashboard for the Tsogo Sun portfolio, now prepared to run outside ChatGPT with **Next.js, Firebase Authentication, and Cloud Firestore**. The original report layout, CSV imports, portfolio grouping, and optional read-only Google Analytics connection are retained.
 
-Original live dashboard: https://emerald-performance.rolihlahla-info.chatgpt.site/
+Repository: https://github.com/Roli-Matsabe/Data-Performance
 
-This repository contains the exported React/Vinext application, assets, bundled Emerald reports, and Cloudflare D1 migrations. The existing ChatGPT Sites dashboard remains the live deployment; this GitHub import does not change it. GitHub changes do not automatically update that website. See [hosting and deployment notes](docs/deployment.md).
+This version no longer relies on ChatGPT identity headers or Cloudflare D1. A production Firebase project has **not yet been connected or deployed**. The previous ChatGPT website is a separate deployment and is not updated by these changes. Follow [Firebase deployment](docs/deployment.md) to connect the real project.
 
-## Local development
+## Development
 
-Use Node.js **22.13.0 or newer** and **pnpm 11.25.0**, matching `package.json`. From the repository root:
-
-```sh
-pnpm install --frozen-lockfile
-npm run build
-npm run db:migrate:local
-```
-
-The build generates `dist/server/wrangler.json`; the migration helper prepares local report storage.
+Use Node.js 22.13 or newer, pnpm **11.25.0**, and Java **21** for emulator tests.
 
 ```sh
+npm exec --yes --package=pnpm@11.25.0 -- pnpm install --frozen-lockfile
+cp .env.example .env.local
 npm run dev
 ```
 
-A clean checkout uses the portable development profile and starts on http://localhost:5173. Local development sign-in is available at http://localhost:5173/signin-with-chatgpt?return_to=/ and uses a simulated test identity. It is restricted to loopback requests and is excluded from production builds.
+Fill `.env.local` with the project's configuration. Firebase Admin uses Application Default Credentials locally and the managed service identity on Firebase App Hosting. Credentials and local environment files must not be committed. The Firebase web API key identifies the project; it is not a service-account credential.
 
-To preview the built Worker locally:
+For local emulators, use the isolated project `demo-tsogo-performance`, `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, and `FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099`. Emulators do not connect to production. The application rejects non-loopback emulator addresses and requires a `demo-` project when they are enabled. Set `SITE_ORIGIN` to the local application address and explicitly approve the emulator user's email through `ALLOWED_EMAILS`.
+
+## Verification
 
 ```sh
+npm run test:emulators
+npm run typecheck
+npm run lint
+npm run build
 npm start
 ```
 
-Use the address printed by Wrangler. This command shares local database state with development, runs on loopback, and does not deploy or simulate sign-in.
+`test:emulators` starts real Firebase Auth and Firestore emulators, then runs 16 tests covering sessions, owner isolation, denied client access, persistent CSV imports, large reports, revision conflicts, Google OAuth state, encryption, sync locking, and the original reporting calculations. `npm test` expects both emulators to already be running. Google HTTP responses are mocked; these tests do not prove access to a live GA4 property.
 
-## Local database
+CI runs emulator tests, types, lint, and a production build. It does not deploy the application automatically.
 
-The application needs the D1 binding `DB` for saved reports and Google connection records. Local state is stored in ignored `.wrangler/state/`; it is separate from the live site's database.
+The runtime targets a Node server. Firebase App Hosting is the recommended deployment. Static Firebase Hosting and GitHub Pages cannot run this application's API routes alone.
 
-After `npm run build`, apply pending migrations:
+## Database and authentication
 
-```sh
-npm run db:migrate:local
-```
+Google sign-in uses Firebase Authentication. A verified ID token is exchanged for a five-day HTTP-only session cookie, and each server request verifies the session, revocation state, and access policy. By default, only verified addresses in `ALLOWED_EMAILS` are accepted. An empty allowlist denies everyone. `ACCESS_POLICY=authenticated` explicitly allows all verified authenticated accounts.
 
-The helper uses Wrangler's migration ledger to apply files from `drizzle/` in order and skip those already recorded. It is safe to rerun and targets only local storage. Databases previously created through raw SQL execution need their migration history reconciled before using this helper.
+Firestore rules deny all direct browser reads and writes. Only the server's managed identity accesses the database, and all records are scoped to the verified Firebase UID. Reports are split into 400 kB chunks, read and written transactionally, and checked for completeness. This supports reports exceeding Firestore's one-document limit without exposing Google tokens to the browser. Combined stored reports have a 4 MB limit.
 
-## Checks
-
-```sh
-npm test
-npm run typecheck
-npm run build
-npm run lint
-```
-
-The 10 automated tests exercise report processing, encryption, OAuth state, owner isolation, and Google sync using local fixtures. They do not verify a production Google connection. Tests, type checking, and the build pass.
-
-The imported code has a known lint baseline: three errors (`set-state-in-effect` in `app/dashboard.tsx` and `app/report-components.tsx`, and `prefer-const` in `lib/properties.ts`) and nine warnings. Application logic is unchanged by this import.
-
-The GitHub Actions workflow in `.github/workflows/ci.yml` installs locked dependencies and runs tests, type checking, and the build. It does not deploy the site.
-
-## Google Analytics and hosting
-
-Google Analytics requires authenticated hosting, a secure site origin, server-side token encryption, and Google OAuth setup. The bundled dashboard remains usable with its original report data before that connection is configured.
-
-The export excludes production credentials, Google authorization tokens, and live database records. It contains configuration names in `.env.example`, with no values. Keep secrets in hosting settings or ignored local configuration. Read [deployment requirements](docs/deployment.md) before exposing the server outside local development.
+The ZIP did not include the original production database, Google tokens, or encryption key. Bundled Emerald reports remain available after sign-in; previous saved imports and Google connections require a separate data migration or re-import/reconnection. The old SQL migrations under `drizzle/` are retained solely as a reference for that migration; they are not used by the Firebase runtime. See [the data model](docs/firestore-data.md).

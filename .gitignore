@@ -46,3 +46,11 @@ next-env.d.ts
 /outputs/
 /work/
 *.tsbuildinfo
+
+# Firebase local tooling and credentials
+/.firebase/
+/firebase-debug.log*
+/firestore-debug.log*
+/ui-debug.log*
+/*service-account*.json
+/application_default_credentials.json

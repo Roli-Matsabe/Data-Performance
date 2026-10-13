@@ -1,7 +1,6 @@
 'use client';
 import {useState} from 'react';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
-import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/components/ui/tabs';
 import {Checkbox} from '@/components/ui/checkbox';
 import {AlertDialog,AlertDialogTrigger,AlertDialogContent,AlertDialogHeader,AlertDialogTitle,AlertDialogDescription,AlertDialogFooter,AlertDialogCancel,AlertDialogAction} from '@/components/ui/alert-dialog';
 import {Icon,Logo,Panel,fmt} from './report-components';

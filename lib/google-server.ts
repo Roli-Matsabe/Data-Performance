@@ -1,23 +1,24 @@
-import {env} from 'cloudflare:workers';
-import {reportDb} from './report-store';
+import {requireOwner} from './auth';
+import {AppError} from './errors';
+import {getConnection,type Connection} from './report-store';
 import type {GoogleConfig,GoogleDimension,GoogleProperty} from './google-types';
 export const READ_SCOPE='https://www.googleapis.com/auth/analytics.readonly';
-export type Connection={owner:string;client_id:string;client_secret:string;refresh_token:string|null;config:string|null;connected_at:string|null;last_sync:string|null;last_error:string|null;revision:number};
-export class GoogleError extends Error{constructor(message:string,public status=400){super(message);}}
-export function origin(){const value=env.SITE_ORIGIN;if(!value||!/^https:\/\/[^/]+$/.test(value))throw new GoogleError('The dashboard connection needs its secure site address configured.',503);return value;}
-export function ready(){return !!env.SITE_ORIGIN&&!!env.GOOGLE_TOKEN_ENCRYPTION_KEY;}
+export type {Connection} from './report-store';
+export class GoogleError extends AppError {}
+export function origin(){const value=process.env.SITE_ORIGIN;if(!value||!/^https:\/\/[^/]+$/.test(value))throw new GoogleError('The dashboard connection needs its secure site address configured.',503);return value;}
+export function ready(){return !!process.env.SITE_ORIGIN&&!!process.env.GOOGLE_TOKEN_ENCRYPTION_KEY;}
 export const callbackUri=()=>origin()+'/api/google/callback';
-export function ownerOf(req:Request,write=false){const id=req.headers.get('oai-authenticated-user-id');if(!id)throw new GoogleError('Sign in to the dashboard to manage Google Analytics.',401);if(write){if(req.headers.get('sec-fetch-site')==='cross-site'||req.headers.get('origin')!==origin())throw new GoogleError('Please make this request from the dashboard.',403);}return id;}
+export const ownerOf = (req:Request,write=false) => requireOwner(req,write);
 export function json(data:unknown,status=200){return Response.json(data,{status,headers:{'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}});}
-export function failure(e:unknown){return json({error:e instanceof GoogleError?e.message:'The Google connection is temporarily unavailable. Please retry.'},e instanceof GoogleError?e.status:503);}
+export function failure(e:unknown){return json({error:e instanceof AppError?e.message:'The Google connection is temporarily unavailable. Please retry.'},e instanceof AppError?e.status:503);}
 export async function bodyOf(req:Request){const text=await req.text();if(text.length>25000)throw new GoogleError('The submitted settings are too large.');try{const data=JSON.parse(text);if(!data||typeof data!=='object'||Array.isArray(data))throw Error();return data;}catch{throw new GoogleError('Invalid settings.');}}
-export async function connection(owner:string){return reportDb().prepare('SELECT * FROM google_connections WHERE owner=?').bind(owner).first<Connection>();}
+export const connection = getConnection;
 export function configOf(c:Connection|null):GoogleConfig|null{return c?.config?JSON.parse(c.config):null;}
 export function toBase64(bytes:Uint8Array){let str='';for(const b of bytes)str+=String.fromCharCode(b);return btoa(str).replaceAll('+','-').replaceAll('/','_').replaceAll('=','');}
 export function fromBase64(value:string){return Uint8Array.from(atob(value.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));}
 export const random=()=>toBase64(crypto.getRandomValues(new Uint8Array(32)));
 export async function hash(value:string){return toBase64(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))));}
-async function key(){const value=env.GOOGLE_TOKEN_ENCRYPTION_KEY;if(!value)throw new GoogleError('Secure connection storage is not configured.',503);const bytes=fromBase64(value);if(bytes.length!==32)throw new GoogleError('Secure connection storage needs attention.',503);return crypto.subtle.importKey('raw',bytes,{name:'AES-GCM'},false,['encrypt','decrypt']);}
+async function key(){const value=process.env.GOOGLE_TOKEN_ENCRYPTION_KEY;if(!value)throw new GoogleError('Secure connection storage is not configured.',503);const bytes=fromBase64(value);if(bytes.length!==32)throw new GoogleError('Secure connection storage needs attention.',503);return crypto.subtle.importKey('raw',bytes,{name:'AES-GCM'},false,['encrypt','decrypt']);}
 export async function seal(text:string,context:string){const iv=crypto.getRandomValues(new Uint8Array(12));const data=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:new TextEncoder().encode(context)},await key(),new TextEncoder().encode(text));return toBase64(iv)+'.'+toBase64(new Uint8Array(data));}
 export async function unseal(text:string,context:string){const [iv,data]=text.split('.');try{return new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:fromBase64(iv),additionalData:new TextEncoder().encode(context)},await key(),fromBase64(data)));}catch{throw new GoogleError('Saved Google credentials could not be read. Reconnect Google Analytics.',503);}}
 export async function signature(config:GoogleConfig){return hash(JSON.stringify({...config,mappings:Object.fromEntries(Object.entries(config.mappings).sort(([a],[b])=>a.localeCompare(b)))}));}
