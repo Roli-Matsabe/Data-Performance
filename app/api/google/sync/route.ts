@@ -2,8 +2,9 @@ import {properties} from '@/lib/properties';
 import {claimSync,releaseSync,saveGoogleReport,updateConnection} from '@/lib/report-store';
 import {ownerOf,bodyOf,connection,configOf,GoogleError,accessToken,signature,json,failure,random} from '@/lib/google-server';
 import {fetchReport} from '@/lib/google-report';
+import type {Owner} from '@/lib/auth';
 export async function POST(req:Request){
- let owner='',lock='',revision:number|undefined;
+ let owner:Owner|undefined,lock='',revision:number|undefined;
  try{
   owner=await ownerOf(req,true);
   const body=await bodyOf(req),c=await connection(owner),config=configOf(c);

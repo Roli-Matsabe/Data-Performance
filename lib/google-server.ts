@@ -5,8 +5,8 @@ import type {GoogleConfig,GoogleDimension,GoogleProperty} from './google-types';
 export const READ_SCOPE='https://www.googleapis.com/auth/analytics.readonly';
 export type {Connection} from './report-store';
 export class GoogleError extends AppError {}
-export function origin(){const value=process.env.SITE_ORIGIN;if(!value||!/^https:\/\/[^/]+$/.test(value))throw new GoogleError('The dashboard connection needs its secure site address configured.',503);return value;}
-export function ready(){return !!process.env.SITE_ORIGIN&&!!process.env.GOOGLE_TOKEN_ENCRYPTION_KEY;}
+export function origin(){const value=process.env.SITE_ORIGIN||process.env.URL;if(!value||!/^https:\/\/[^/]+$/.test(value))throw new GoogleError('The dashboard connection needs its secure site address configured.',503);return value;}
+export function ready(){return !!(process.env.SITE_ORIGIN||process.env.URL)&&!!process.env.GOOGLE_TOKEN_ENCRYPTION_KEY;}
 export const callbackUri=()=>origin()+'/api/google/callback';
 export const ownerOf = (req:Request,write=false) => requireOwner(req,write);
 export function json(data:unknown,status=200){return Response.json(data,{status,headers:{'Cache-Control':'no-store','Referrer-Policy':'no-referrer'}});}

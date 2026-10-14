@@ -54,3 +54,6 @@ next-env.d.ts
 /ui-debug.log*
 /*service-account*.json
 /application_default_credentials.json
+/.netlify/
+/supabase/.temp/
+/supabase/.branches/

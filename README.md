@@ -1,14 +1,24 @@
 # Tsogo Sun Performance
 
-A website performance dashboard for the Tsogo Sun portfolio, now prepared to run outside ChatGPT with **Next.js, Firebase Authentication, and Cloud Firestore**. The original report layout, CSV imports, portfolio grouping, and optional read-only Google Analytics connection are retained.
+A standalone dashboard for the Tsogo Sun portfolio, using **Next.js, Supabase Auth, and Supabase PostgreSQL**. The original report layout, bundled Emerald reports, CSV imports, property grouping, and optional read-only Google Analytics connection are retained.
 
 Repository: https://github.com/Roli-Matsabe/Data-Performance
 
-This version no longer relies on ChatGPT identity headers or Cloudflare D1. The deployment configuration targets Firebase project `website-analytics-dashbo-15be5`, Firestore database `(default)`, and permits only the verified account `rolihlahla.info@gmail.com`. The public Web app configuration is included in `apphosting.yaml`. **Production access and deployment have not yet been verified.** The previous ChatGPT website is a separate deployment and is not updated by these changes. Follow [Firebase deployment](docs/deployment.md) to publish the standalone app.
+The app is prepared for **Supabase Free + Netlify Free**, within those services' quotas. It does not need Firebase App Hosting, a Firebase billing account, or ChatGPT Cloud. The approved account is `rolihlahla.info@gmail.com`.
+
+**Deployment status:** the migration is implemented and tested locally. The live Supabase project and Netlify site still need to be connected. A GitHub push alone does not publish a website.
+
+## Publish the dashboard
+
+Follow [the deployment guide](docs/deployment.md): apply the SQL migration, create the approved Supabase Auth user, and deploy to Netlify with the project's public URL and publishable key. No service-role key or database password is required by the app.
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Roli-Matsabe/Data-Performance)
+
+The button uses Netlify's template flow. To keep deploying from this exact repository, use **Add new project → Import an existing project** instead, choosing `Roli-Matsabe/Data-Performance`, branch `main`.
 
 ## Development
 
-Use Node.js 22.13 or newer, pnpm **11.25.0**, and Java **21** for emulator tests.
+Use Node.js 22.13 or newer and pnpm **11.25.0**.
 
 ```sh
 npm exec --yes --package=pnpm@11.25.0 -- pnpm install --frozen-lockfile
@@ -16,30 +26,27 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Fill `.env.local` with the project's configuration. Firebase Admin uses Application Default Credentials locally and the managed service identity on Firebase App Hosting. Credentials and local environment files must not be committed. The Firebase web API key identifies the project; it is not a service-account credential.
-
-For local emulators, use the isolated project `demo-tsogo-performance`, `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, and `FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099`. Emulators do not connect to production. The application rejects non-loopback emulator addresses and requires a `demo-` project when they are enabled. Set `SITE_ORIGIN` to the local application address and explicitly approve the emulator user's email through `ALLOWED_EMAILS`.
+Fill `.env.local` with the Supabase project URL and publishable/anon key. Apply the migration to a development project and create an approved test account before using it. Local development may access that configured project's database, so use a separate project for experimentation.
 
 ## Verification
 
 ```sh
-npm run test:emulators
+npm run test:integration
+npm run build
 npm run typecheck
 npm run lint
-npm run build
-npm start
 ```
 
-`test:emulators` starts real Firebase Auth and Firestore emulators, then runs 16 tests covering sessions, owner isolation, denied client access, persistent CSV imports, large reports, revision conflicts, Google OAuth state, encryption, sync locking, and the original reporting calculations. `npm test` expects both emulators to already be running. Google HTTP responses are mocked; these tests do not prove access to a live GA4 property.
+The integration runner requires Docker. It creates disposable PostgreSQL, Supabase Auth, and PostgREST containers using pinned image digests, runs **17 tests**, then removes its containers and temporary volumes. It never uses the configured cloud Supabase project. Tests cover password sign-in, refreshed sessions, access denial, private database tables, owner isolation, saved CSVs, large reports, concurrent edits, encrypted credentials, OAuth replay, and sync locking. Google API responses are mocked. `npm run test:unit` runs only the seven reporting/crypto tests.
 
-CI runs emulator tests, types, lint, and a production build. It does not deploy the application automatically.
+CI runs the same checks. Netlify supplies the Next.js runtime for server rendering and API routes; a static host alone cannot run this app.
 
-The runtime targets a Node server. Firebase App Hosting is the recommended deployment. Static Firebase Hosting and GitHub Pages cannot run this application's API routes alone.
+The local production browser check also passed sign-in, report persistence after refresh, mobile layout, and sign-out. Netlify's local adapter built the server function, but its final edge bundle could not complete because this workspace could not fetch a required runtime resource. The first real Netlify deployment still needs verification.
 
-## Database and authentication
+## Access and data
 
-Google sign-in uses Firebase Authentication. A verified ID token is exchanged for a five-day HTTP-only session cookie, and each server request verifies the session, revocation state, and access policy. By default, only verified addresses in `ALLOWED_EMAILS` are accepted. An empty allowlist denies everyone. `ACCESS_POLICY=authenticated` explicitly allows all verified authenticated accounts.
+Sign-in uses a Supabase email/password account. Tokens stay in HTTP-only cookies; the server validates the user with Supabase Auth, and the proxy persists refreshed cookies. Both the server email allowlist and database allowlist must approve the account. Public sign-up is not exposed by the application and should be disabled in Supabase.
 
-Firestore rules deny all direct browser reads and writes. Only the server's managed identity accesses the database, and all records are scoped to the verified Firebase UID. Reports are split into 400 kB chunks, read and written transactionally, and checked for completeness. This supports reports exceeding Firestore's one-document limit without exposing Google tokens to the browser. Combined stored reports have a 4 MB limit.
+Every database operation derives the owner from Supabase's verified JWT and checks an active Auth session. Private tables have row-level security enabled and no browser grants. A narrowly scoped database function provides atomic reads/writes for the signed-in user. The application never uses a service-role key. See [the database model](docs/supabase-data.md).
 
-The ZIP did not include the original production database, Google tokens, or encryption key. Bundled Emerald reports remain available after sign-in; previous saved imports and Google connections require a separate data migration or re-import/reconnection. The old SQL migrations under `drizzle/` are retained solely as a reference for that migration; they are not used by the Firebase runtime. See [the data model](docs/firestore-data.md).
+The ZIP excluded the old live database and Google tokens. Bundled Emerald reports are retained; previous saved imports require re-import or a separate authorized export. Reconnect Google Analytics to create a new encrypted connection. SQL under `drizzle/` is historical reference and is not used by this runtime.

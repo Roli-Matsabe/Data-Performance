@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "24"
+  PNPM_VERSION = "11.25.0"
+  ALLOWED_EMAILS = "rolihlahla.info@gmail.com"
+
+# Netlify automatically applies its Next.js runtime for server routes and SSR.
+# Supply these two public values when creating the site with Deploy to Netlify.
+[template.environment]
+  SUPABASE_URL = "Supabase Project URL, for example https://your-project.supabase.co"
+  SUPABASE_PUBLISHABLE_KEY = "Supabase publishable key (or legacy anon public key)"

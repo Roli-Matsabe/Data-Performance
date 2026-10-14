@@ -16,6 +16,7 @@ const eslintConfig = defineConfig([
     ".sites-runtime/**",
     ".wrangler/**",
     ".firebase/**",
+    ".netlify/**",
   ]),
   {
     files: ["components/ui/**/*.{ts,tsx}", "hooks/use-mobile.ts"],
